@@ -141,7 +141,7 @@ func (c *Client) GetChatID(graphToken, userID string) (string, error) {
 	filter := fmt.Sprintf("teamsApp/id eq '%s'", c.teamsAppID)
 
 	apiURL := fmt.Sprintf(
-		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$expand=chat&$filter=%s",
+		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$filter=%s",
 		userID, url.QueryEscape(filter),
 	)
 

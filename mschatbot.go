@@ -137,9 +137,10 @@ func (c *Client) InstallBot(graphToken, userID string) error {
 	return nil
 }
 
-func (c *Client) GetChatID(graphToken, userID string) (string, error) {
-	filter := fmt.Sprintf("teamsApp/id eq '%s'", c.teamsAppID)
-
+func GetChatID(graphToken, userID string) (string, error) {
+	// Step 1: Find the App Installation ID
+	// We remove $expand=chat to satisfy the API's restriction
+	filter := fmt.Sprintf("teamsApp/id eq '%s'", teamsAppID)
 	apiURL := fmt.Sprintf(
 		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$filter=%s",
 		userID, url.QueryEscape(filter),
@@ -155,27 +156,42 @@ func (c *Client) GetChatID(graphToken, userID string) (string, error) {
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	var result map[string]interface{}
+	var result struct {
+		Value []struct {
+			ID string `json:"id"`
+		} `json:"value"`
+	}
 	json.Unmarshal(body, &result)
 
-	values, ok := result["value"].([]interface{})
-	if !ok || len(values) == 0 {
-		return "", fmt.Errorf("chat tidak ditemukan: %s", string(body))
+	if len(result.Value) == 0 {
+		return "", fmt.Errorf("bot belum terinstall untuk user ini")
 	}
 
-	firstApp, ok := values[0].(map[string]interface{})
-	if !ok {
-		return "", fmt.Errorf("format response tidak valid")
-	}
+	// This is the Installation ID (e.g., "MCMjY2...")
+	appInstallationID := result.Value[0].ID
 
-	chat, ok := firstApp["chat"].(map[string]interface{})
-	if !ok {
-		return "", fmt.Errorf("chat object tidak ditemukan, pastikan bot sudah di-install")
-	}
+	// Step 2: Get the Chat ID using the Installation ID
+	chatURL := fmt.Sprintf(
+		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps/%s/chat",
+		userID, appInstallationID,
+	)
 
-	chatID, ok := chat["id"].(string)
+	reqChat, _ := http.NewRequest("GET", chatURL, nil)
+	reqChat.Header.Set("Authorization", "Bearer "+graphToken)
+
+	respChat, err := http.DefaultClient.Do(reqChat)
+	if err != nil {
+		return "", err
+	}
+	defer respChat.Body.Close()
+
+	chatBody, _ := io.ReadAll(respChat.Body)
+	var chatResult map[string]interface{}
+	json.Unmarshal(chatBody, &chatResult)
+
+	chatID, ok := chatResult["id"].(string)
 	if !ok {
-		return "", fmt.Errorf("chat ID tidak ditemukan")
+		return "", fmt.Errorf("gagal mendapatkan Chat ID: %s", string(chatBody))
 	}
 
 	return chatID, nil

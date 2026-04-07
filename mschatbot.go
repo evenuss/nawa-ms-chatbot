@@ -10,17 +10,6 @@ import (
 	"strings"
 )
 
-const (
-	tenantID     = ""
-	clientID     = ""
-	clientSecret = ""
-	// clientSecret = ""
-
-	targetEmail = ""
-	teamsAppID  = ""
-	message     = "Halo! Izin Test Notifikasi ya mas 🚀"
-)
-
 type Client struct {
 	tenantID     string
 	clientID     string
@@ -220,63 +209,4 @@ func (c *Client) sendMessage(botToken, chatID, text string) error {
 	}
 
 	return nil
-}
-
-func main() {
-	client := &Client{
-		tenantID:     tenantID,
-		clientID:     clientID,
-		clientSecret: clientSecret,
-		targetEmail:  targetEmail,
-		teamsAppID:   teamsAppID,
-		message:      message,
-	}
-
-	fmt.Println("📡 Mengambil bot token...")
-	botToken, err := client.getBotToken()
-	if err != nil {
-		fmt.Println("❌ Error get bot token:", err)
-		return
-	}
-	fmt.Println("✅ Bot token didapat")
-
-	fmt.Println("📡 Mengambil graph token...")
-	graphToken, err := client.getGraphToken()
-	if err != nil {
-		fmt.Println("❌ Error get graph token:", err)
-		return
-	}
-	fmt.Println("✅ Graph token didapat")
-
-	fmt.Printf("🔍 Mencari user: %s\n", client.targetEmail)
-	userID, err := client.getUserID(graphToken, client.targetEmail)
-	if err != nil {
-		fmt.Println("❌ Error get user:", err)
-		return
-	}
-	fmt.Printf("✅ User ID: %s\n", userID)
-
-	// fmt.Println("📲 Install bot ke user...")
-	// err = client.installBot(graphToken, userID)
-	// if err != nil {
-	// 	fmt.Println("❌ Error install bot:", err)
-	// 	return
-	// }
-	// fmt.Println("✅ Bot terinstall")
-
-	fmt.Println("💬 Mengambil chat ID...")
-	chatID, err := client.getChatID(graphToken, userID)
-	if err != nil {
-		fmt.Println("❌ Error get chat ID:", err)
-		return
-	}
-	fmt.Printf("✅ Chat ID: %s\n", chatID)
-
-	fmt.Println("📨 Mengirim pesan...")
-	err = client.sendMessage(botToken, chatID, message)
-	if err != nil {
-		fmt.Println("❌ Error send message:", err)
-		return
-	}
-	fmt.Println("✅ Pesan berhasil dikirim!")
 }

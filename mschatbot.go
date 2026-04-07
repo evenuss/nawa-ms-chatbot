@@ -232,18 +232,21 @@ func (c *Client) SendMessage() error {
 	}
 
 	// Kirim pesan
-	text := c.message
 	serviceURL := "https://smba.trafficmanager.net/apis"
 	apiURL := fmt.Sprintf("%s/v3/conversations/%s/activities", serviceURL, chatID)
 
 	payload := map[string]interface{}{
-		"type":       "message",
-		"textFormat": c.textFormat,
+		"type": "message",
 		"from": map[string]string{
 			"id":   "28:" + c.clientID,
 			"name": "NotifBot",
 		},
-		"text": text,
+		"attachments": []map[string]interface{}{
+			{
+				"contentType": "text/html",
+				"content":     c.message,
+			},
+		},
 	}
 
 	body, _ := json.Marshal(payload)

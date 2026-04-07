@@ -139,8 +139,8 @@ func (c *Client) InstallBot(graphToken, userID string) error {
 
 func (c *Client) GetChatID(graphToken, userID string) (string, error) {
 	apiURL := fmt.Sprintf(
-		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$expand=chat&$filter=teamsApp/id eq '%s'",
-		userID, c.teamsAppID,
+		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$expand=chat&$filter=%s",
+		userID, url.QueryEscape("teamsApp/id eq '"+c.teamsAppID+"'"),
 	)
 
 	req, _ := http.NewRequest("GET", apiURL, nil)

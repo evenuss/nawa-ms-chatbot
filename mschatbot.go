@@ -179,7 +179,40 @@ func (c *Client) GetChatID(graphToken, userID string) (string, error) {
 	return chatID, nil
 }
 
-func (c *Client) SendMessage(botToken, chatID, text string) error {
+func (c *Client) SendMessage() error {
+
+	// Dapatkan bot token
+	botToken, err := c.GetBotToken()
+	if err != nil {
+		return fmt.Errorf("gagal dapatkan bot token: %w", err)
+	}
+
+	// Dapatkan graph token
+	graphToken, err := c.GetGraphToken()
+	if err != nil {
+		return fmt.Errorf("gagal dapatkan graph token: %w", err)
+	}
+
+	// Dapatkan user ID
+	userID, err := c.GetUserID(graphToken, c.targetEmail)
+	if err != nil {
+		return fmt.Errorf("gagal dapatkan user ID: %w", err)
+	}
+
+	// Install bot ke user (jika belum)
+	err = c.InstallBot(graphToken, userID)
+	if err != nil {
+		return fmt.Errorf("gagal install bot: %w", err)
+	}
+
+	// Dapatkan chat ID
+	chatID, err := c.GetChatID(graphToken, userID)
+	if err != nil {
+		return fmt.Errorf("gagal dapatkan chat ID: %w", err)
+	}
+
+	// Kirim pesan
+	text := c.message
 	serviceURL := "https://smba.trafficmanager.net/apis"
 	apiURL := fmt.Sprintf("%s/v3/conversations/%s/activities", serviceURL, chatID)
 
@@ -210,3 +243,35 @@ func (c *Client) SendMessage(botToken, chatID, text string) error {
 
 	return nil
 }
+
+// func (c *Client) SendMessage(botToken, chatID, text string) error {
+// 	serviceURL := "https://smba.trafficmanager.net/apis"
+// 	apiURL := fmt.Sprintf("%s/v3/conversations/%s/activities", serviceURL, chatID)
+
+// 	payload := map[string]interface{}{
+// 		"type": "message",
+// 		"from": map[string]string{
+// 			"id":   "28:" + c.clientID,
+// 			"name": "NotifBot",
+// 		},
+// 		"text": text,
+// 	}
+
+// 	body, _ := json.Marshal(payload)
+// 	req, _ := http.NewRequest("POST", apiURL, bytes.NewBuffer(body))
+// 	req.Header.Set("Authorization", "Bearer "+botToken)
+// 	req.Header.Set("Content-Type", "application/json")
+
+// 	resp, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer resp.Body.Close()
+
+// 	respBody, _ := io.ReadAll(resp.Body)
+// 	if resp.StatusCode >= 400 {
+// 		return fmt.Errorf("gagal kirim pesan (status %d): %s", resp.StatusCode, string(respBody))
+// 	}
+
+// 	return nil
+// }

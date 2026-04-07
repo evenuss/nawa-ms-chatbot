@@ -31,7 +31,7 @@ func NewClient(tenantID, clientID, clientSecret, targetEmail, teamsAppID, messag
 	}
 }
 
-func (c *Client) getBotToken() (string, error) {
+func (c *Client) GetBotToken() (string, error) {
 	endpoint := "https://login.microsoftonline.com/" + c.tenantID + "/oauth2/v2.0/token"
 
 	data := url.Values{}
@@ -57,7 +57,7 @@ func (c *Client) getBotToken() (string, error) {
 	return token, nil
 }
 
-func (c *Client) getGraphToken() (string, error) {
+func (c *Client) GetGraphToken() (string, error) {
 	endpoint := fmt.Sprintf("https://login.microsoftonline.com/%s/oauth2/v2.0/token", c.tenantID)
 
 	data := url.Values{}
@@ -83,7 +83,7 @@ func (c *Client) getGraphToken() (string, error) {
 	return token, nil
 }
 
-func (c *Client) getUserID(graphToken, email string) (string, error) {
+func (c *Client) GetUserID(graphToken, email string) (string, error) {
 	apiURL := fmt.Sprintf("https://graph.microsoft.com/v1.0/users/%s", email)
 
 	req, _ := http.NewRequest("GET", apiURL, nil)
@@ -106,7 +106,7 @@ func (c *Client) getUserID(graphToken, email string) (string, error) {
 	return id, nil
 }
 
-func (c *Client) installBot(graphToken, userID string) error {
+func (c *Client) InstallBot(graphToken, userID string) error {
 	apiURL := fmt.Sprintf("https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps", userID)
 
 	payload := map[string]interface{}{
@@ -137,7 +137,7 @@ func (c *Client) installBot(graphToken, userID string) error {
 	return nil
 }
 
-func (c *Client) getChatID(graphToken, userID string) (string, error) {
+func (c *Client) GetChatID(graphToken, userID string) (string, error) {
 	apiURL := fmt.Sprintf(
 		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$expand=chat&$filter=teamsApp/id eq '%s'",
 		userID, c.teamsAppID,
@@ -179,7 +179,7 @@ func (c *Client) getChatID(graphToken, userID string) (string, error) {
 	return chatID, nil
 }
 
-func (c *Client) sendMessage(botToken, chatID, text string) error {
+func (c *Client) SendMessage(botToken, chatID, text string) error {
 	serviceURL := "https://smba.trafficmanager.net/apis"
 	apiURL := fmt.Sprintf("%s/v3/conversations/%s/activities", serviceURL, chatID)
 

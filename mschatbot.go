@@ -137,10 +137,10 @@ func (c *Client) InstallBot(graphToken, userID string) error {
 	return nil
 }
 
-func GetChatID(graphToken, userID string) (string, error) {
+func (c *Client) GetChatID(graphToken, userID string) (string, error) {
 	// Step 1: Find the App Installation ID
 	// We remove $expand=chat to satisfy the API's restriction
-	filter := fmt.Sprintf("teamsApp/id eq '%s'", teamsAppID)
+	filter := fmt.Sprintf("teamsApp/id eq '%s'", c.teamsAppID)
 	apiURL := fmt.Sprintf(
 		"https://graph.microsoft.com/v1.0/users/%s/teamwork/installedApps?$filter=%s",
 		userID, url.QueryEscape(filter),
